@@ -28,7 +28,6 @@ install_arch() {
 
 	[[ "$password" == "$password2" ]] || { echo "Passwords did not match"; exit 1; }
 
-
 	lsblk
 	echo -n "Enter the disk to partition (e.g., /dev/nvme0n1): "
 	read disk
@@ -69,29 +68,21 @@ install_arch() {
 	genfstab -U /mnt >> /mnt/etc/fstab
 
 	arch-chroot /mnt /bin/bash <<EOF
-
 	echo "$hostname" > /etc/hostname
-	# FIX: Added the | pipe here
 	echo "root:$root_password" | chpasswd
 	useradd -m -G wheel -s /bin/bash $username
 	echo "$username:$password" | chpasswd
 	sed -i 's/^# %wheel ALL=(ALL:ALL) ALL/%wheel ALL=(ALL:ALL) ALL/' /etc/sudoers
-
 	ln -sf /usr/share/zoneinfo/Europe/Rome /etc/localtime
 	hwclock --systohc
-
 	sed -i 's/^#en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen
 	locale-gen
 	echo "LANG=en_US.UTF-8" > /etc/locale.conf
-
 	grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=GRUB
 	grub-mkconfig -o /boot/grub/grub.cfg
-
 	systemctl enable ly
 	systemctl enable NetworkManager
-
-	EOF
-
+EOF
 
 	umount -R /mnt
 	echo "Arch Linux installation complete. Type 'reboot' and remove your installation media."
